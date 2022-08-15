@@ -4,6 +4,8 @@
 
 React-perspective-cropper is a React component for cropping images based on OpenCV andperspective transformation.
 
+![Cropper](https://img001.prntscr.com/file/img001/8H8g_pWyTkqN2rWlp3zhSg.png)
+
 ## Installation
 
 npm install react-image-perspective-cropper
