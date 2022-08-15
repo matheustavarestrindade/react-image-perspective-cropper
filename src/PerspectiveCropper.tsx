@@ -1,5 +1,5 @@
 import interact from "interactjs";
-import { CSSProperties, forwardRef, useCallback, useEffect, useRef } from "react";
+import { CSSProperties, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
 export interface Point {
     x: number;
@@ -21,9 +21,9 @@ interface PerspectiveCropperProps {
 
 const PerspectiveCropper = ({
     src,
-    width = 1000,
-    height = 1000,
     paddingX = 100,
+    width,
+    height,
     paddingY = 100,
     backgroundColor = "#202020",
     draggableDotStyles,
@@ -41,14 +41,17 @@ const PerspectiveCropper = ({
     const insetPx = 10;
     const dotSizeOffsset = draggableDotSize / 2;
 
+    const [computedWidth, setWidth] = useState(width || 0);
+    const [computedHeight, setHeight] = useState(height || 0);
+
     const startPosx1 = insetPx + dotSizeOffsset;
     const startPosy1 = insetPx + dotSizeOffsset;
-    const startPosx2 = width - insetPx - dotSizeOffsset;
+    const startPosx2 = computedWidth - insetPx - dotSizeOffsset;
     const startPosy2 = insetPx + dotSizeOffsset;
-    const startPosx3 = width - insetPx - dotSizeOffsset;
-    const startPosy3 = height - insetPx - dotSizeOffsset;
+    const startPosx3 = computedWidth - insetPx - dotSizeOffsset;
+    const startPosy3 = computedHeight - insetPx - dotSizeOffsset;
     const startPosx4 = insetPx + dotSizeOffsset;
-    const startPosy4 = height - insetPx - dotSizeOffsset;
+    const startPosy4 = computedHeight - insetPx - dotSizeOffsset;
 
     const getPoints = useCallback(() => {
         const fdot = firstDotRef.current;
@@ -127,7 +130,7 @@ const PerspectiveCropper = ({
         });
 
         return () => interactListener.unset();
-    }, [width, height, paddingX, paddingY, dragMoveListener, startPosy1, startPosx1, startPosy2, startPosx2, startPosy3, startPosx3, startPosy4, startPosx4]);
+    }, [computedWidth, computedHeight, paddingX, paddingY, dragMoveListener, startPosy1, startPosx1, startPosy2, startPosx2, startPosy3, startPosx3, startPosy4, startPosx4]);
 
     const svgDefaultStyles: CSSProperties = {
         zIndex: 1,
@@ -145,8 +148,8 @@ const PerspectiveCropper = ({
         alignContent: "center",
         justifyContent: "center",
         backgroundColor,
-        width: width + paddingX + "px",
-        height: height + paddingY,
+        width: computedWidth + paddingX + "px",
+        height: computedHeight + paddingY,
         alignItems: "center",
     };
 
@@ -155,8 +158,8 @@ const PerspectiveCropper = ({
         position: "relative",
         alignContent: "center",
         justifyContent: "center",
-        width: width + "px",
-        height: height,
+        width: computedWidth + "px",
+        height: computedHeight,
         alignItems: "center",
     };
 
@@ -164,7 +167,7 @@ const PerspectiveCropper = ({
         display: "flex",
         position: "absolute",
         bottom: "50px",
-        right: width / 2 + "px",
+        right: computedWidth / 2 + "px",
         width: "150px",
         height: "50px",
         cursor: "pointer",
@@ -192,8 +195,11 @@ const PerspectiveCropper = ({
             img.onload = r;
             img.onerror = rej;
         });
-        ctx.drawImage(img, 0, 0, width, height);
-    }, [height, src, width]);
+        if (!computedHeight) setHeight(img.height);
+        if (!computedWidth) setWidth(img.width);
+
+        ctx.drawImage(img, 0, 0, computedWidth, computedHeight);
+    }, [computedHeight, src, computedWidth]);
 
     useEffect(() => {
         if (src === null || src === "") return;
@@ -208,11 +214,11 @@ const PerspectiveCropper = ({
                 arr1.push(imagePoints[i].x);
                 arr1.push(imagePoints[i].y);
             }
-            let arr2 = [0, 0, width, 0, 0, height, width, height];
+            let arr2 = [0, 0, computedWidth, 0, 0, computedHeight, computedWidth, computedHeight];
             let mat1 = cv.matFromArray(4, 2, cv.CV_32F, arr1);
             let mat2 = cv.matFromArray(4, 2, cv.CV_32F, arr2);
             let perspectiveMatrix = cv.getPerspectiveTransform(mat1, mat2);
-            let size = new cv.Size(width, height);
+            let size = new cv.Size(computedWidth, computedHeight);
             cv.warpPerspective(frame, dst, perspectiveMatrix, size);
             mat1.delete();
             mat2.delete();
@@ -225,7 +231,7 @@ const PerspectiveCropper = ({
             const imageData = new ImageData(intArray, dst.cols, dst.rows);
             return imageData;
         },
-        [height, width]
+        [computedHeight, computedWidth]
     );
 
     const cropImage = useCallback(() => {
@@ -234,7 +240,7 @@ const PerspectiveCropper = ({
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         const { x1, y1, x2, y2, x3, y3, x4, y4, width: imageWidth, height: imageHeigth } = getPoints();
-        const imageData = ctx.getImageData(0, 0, width, height);
+        const imageData = ctx.getImageData(0, 0, computedWidth, computedHeight);
         let src = cv.matFromImageData(imageData);
         let dst = new cv.Mat();
         const wrapMatrix = [
@@ -245,12 +251,12 @@ const PerspectiveCropper = ({
         ];
         const imageDataWrapped = wrapImage(src, dst, wrapMatrix, imageWidth, imageHeigth);
         handleFinishedCrop && handleFinishedCrop(imageDataWrapped);
-    }, [getPoints, handleFinishedCrop, height, width, wrapImage]);
+    }, [getPoints, handleFinishedCrop, computedHeight, computedWidth, wrapImage]);
 
     return (
         <div style={containerStyles}>
             <div style={subContainerStyles}>
-                <svg height={height} width={width} style={svgDefaultStyles}>
+                <svg height={computedHeight} width={computedWidth} style={svgDefaultStyles}>
                     <defs>
                         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                             <rect width="40" height="40" fill="rgba(20 ,20,20,0.5)" />
@@ -269,7 +275,7 @@ const PerspectiveCropper = ({
                 <DraggableDot id="SECOND" draggableDotStyles={draggableDotStyles} ref={secondDotRef} draggableDotSize={draggableDotSize} />
                 <DraggableDot id="THIRD" draggableDotStyles={draggableDotStyles} ref={thirdDotRef} draggableDotSize={draggableDotSize} />
                 <DraggableDot id="FORFH" draggableDotStyles={draggableDotStyles} ref={fourthDotRef} draggableDotSize={draggableDotSize} />
-                <canvas ref={canvasRef} width={width} height={height} />
+                <canvas ref={canvasRef} width={computedWidth} height={computedHeight} />
                 <button style={buttonStyles} onClick={cropImage}>
                     Crop Image
                 </button>
