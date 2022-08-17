@@ -261,7 +261,7 @@ const PerspectiveCropper = ({
         if (typeof onPointsFinishedChange === "function") {
             const timeout = setTimeout(() => {
                 onPointsFinishedChange(currentPoints);
-            }, 1000);
+            }, 200);
             return () => clearTimeout(timeout);
         }
     }, [currentPoints, onPointsFinishedChange]);

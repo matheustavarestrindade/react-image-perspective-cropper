@@ -8,6 +8,6 @@ export type { Point };
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(
     <React.StrictMode>
-        <PerspectiveCropper src={"teste2.jpg"} />
+        <PerspectiveCropper src={"teste2.jpg"} onPointsFinishedChange={(points) => console.log(points)} />
     </React.StrictMode>
 );
