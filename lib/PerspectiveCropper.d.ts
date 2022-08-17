@@ -15,7 +15,8 @@ interface PerspectiveCropperProps {
     startPoints?: Point[];
     handleFinishedCrop?: (data: ImageData) => void;
     onPointsChange?: (points: Point[]) => void;
+    onPointsFinishedChange?: (points: Point[]) => void;
     showGrid?: boolean;
 }
-declare const PerspectiveCropper: ({ src, paddingX, width, height, paddingY, backgroundColor, draggableDotStyles, draggableDotSize, handleFinishedCrop, onPointsChange, startPoints, showGrid, }: PerspectiveCropperProps) => JSX.Element;
+declare const PerspectiveCropper: ({ src, paddingX, width, height, paddingY, backgroundColor, draggableDotStyles, draggableDotSize, handleFinishedCrop, onPointsChange, onPointsFinishedChange, startPoints, showGrid, }: PerspectiveCropperProps) => JSX.Element;
 export default PerspectiveCropper;

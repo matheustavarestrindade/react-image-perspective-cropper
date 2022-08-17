@@ -20,6 +20,7 @@ interface PerspectiveCropperProps {
     onPointsChange?: (points: Point[]) => void;
     onPointsFinishedChange?: (points: Point[]) => void;
     showGrid?: boolean;
+    debounceDelay?: number;
 }
 
 const PerspectiveCropper = ({
@@ -36,6 +37,7 @@ const PerspectiveCropper = ({
     onPointsFinishedChange,
     startPoints,
     showGrid = true,
+    debounceDelay = 300,
 }: PerspectiveCropperProps) => {
     const firstDotRef = useRef<HTMLDivElement>(null);
     const secondDotRef = useRef<HTMLDivElement>(null);
@@ -261,10 +263,10 @@ const PerspectiveCropper = ({
         if (typeof onPointsFinishedChange === "function") {
             const timeout = setTimeout(() => {
                 onPointsFinishedChange(currentPoints);
-            }, 200);
+            }, debounceDelay);
             return () => clearTimeout(timeout);
         }
-    }, [currentPoints, onPointsFinishedChange]);
+    }, [currentPoints, debounceDelay, onPointsFinishedChange]);
 
     const cropImage = useCallback(() => {
         const canvas = canvasRef.current;
