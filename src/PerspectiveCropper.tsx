@@ -17,6 +17,8 @@ interface PerspectiveCropperProps {
     draggableDotSize?: number;
     startPoints?: Point[];
     handleFinishedCrop?: (data: ImageData) => void;
+    onPointsChange?: (points: Point[]) => void;
+    onPointsFinishedChange?: (points: Point[]) => void;
     showGrid?: boolean;
 }
 
@@ -30,6 +32,8 @@ const PerspectiveCropper = ({
     draggableDotStyles,
     draggableDotSize = 12,
     handleFinishedCrop,
+    onPointsChange,
+    onPointsFinishedChange,
     startPoints,
     showGrid = true,
 }: PerspectiveCropperProps) => {
@@ -45,6 +49,8 @@ const PerspectiveCropper = ({
 
     const [computedWidth, setWidth] = useState(width || 0);
     const [computedHeight, setHeight] = useState(height || 0);
+
+    const [currentPoints, setCurrentPoints] = useState([]);
 
     const startPosx1 = startPoints && startPoints[0] ? startPoints[0].x : insetPx + dotSizeOffsset;
     const startPosy1 = startPoints && startPoints[0] ? startPoints[0].y : insetPx + dotSizeOffsset;
@@ -84,9 +90,24 @@ const PerspectiveCropper = ({
         if (!polygonRef.current) return;
         const { x1, y1, x2, y2, x3, y3, x4, y4 } = getPoints();
 
+        if (typeof onPointsFinishedChange === "function")
+            setCurrentPoints([
+                { x: x1, y: y1 },
+                { x: x2, y: y2 },
+                { x: x3, y: y3 },
+                { x: x4, y: y4 },
+            ]);
+
+        if (typeof onPointsChange === "function")
+            onPointsChange([
+                { x: x1, y: y1 },
+                { x: x2, y: y2 },
+                { x: x3, y: y3 },
+                { x: x4, y: y4 },
+            ]);
         const polygon = polygonRef.current;
         polygon.setAttribute("points", `${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}`);
-    }, [getPoints]);
+    }, [getPoints, onPointsChange, onPointsFinishedChange]);
 
     const dragMoveListener = useCallback(
         (event: any) => {
@@ -235,6 +256,15 @@ const PerspectiveCropper = ({
         },
         [computedHeight, computedWidth]
     );
+
+    useEffect(() => {
+        if (typeof onPointsFinishedChange === "function") {
+            const timeout = setTimeout(() => {
+                onPointsFinishedChange(currentPoints);
+            }, 1000);
+            return () => clearTimeout(timeout);
+        }
+    }, [currentPoints, onPointsFinishedChange]);
 
     const cropImage = useCallback(() => {
         const canvas = canvasRef.current;

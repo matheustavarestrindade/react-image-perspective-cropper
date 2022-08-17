@@ -36,6 +36,7 @@ const Cropper = () => {
                 console.log(croppedImage); // Cropped imageData
         }}
         startPoints={[{x1,y1}, {x2,y2}, {x3,y3}, {x4,y4}]} // Optional, if not present will be used the default styles
+        onPointsChange={(points: Point[]) => {console.log(points)}} // Called when the points change
         showGrid={true} // Optional, if not present will be used true
     />
 
