@@ -1,11 +1,12 @@
 {
     "name": "react-image-perspective-cropper",
-    "version": "0.1.2",
+    "version": "0.1.4",
     "private": false,
     "repository": {
         "type": "git",
         "url": "https://github.com/matheustavarestrindade/react-image-perspective-cropper.git"
     },
+    "main": "lib/index.js",
     "dependencies": {
         "@interactjs/types": "^1.10.17",
         "@testing-library/jest-dom": "^5.16.5",
@@ -25,7 +26,7 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
-        "deploy": "npm publish --access public"
+        "deploy": "npx tsc && npm publish --access public"
     },
     "eslintConfig": {
         "extends": [
