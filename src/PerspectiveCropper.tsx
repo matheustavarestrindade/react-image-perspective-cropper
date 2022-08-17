@@ -15,6 +15,7 @@ interface PerspectiveCropperProps {
     backgroundColor?: string;
     draggableDotStyles?: CSSProperties;
     draggableDotSize?: number;
+    startPoints?: Point[];
     handleFinishedCrop?: (data: ImageData) => void;
     showGrid?: boolean;
 }
@@ -29,6 +30,7 @@ const PerspectiveCropper = ({
     draggableDotStyles,
     draggableDotSize = 12,
     handleFinishedCrop,
+    startPoints,
     showGrid = true,
 }: PerspectiveCropperProps) => {
     const firstDotRef = useRef<HTMLDivElement>(null);
@@ -44,14 +46,14 @@ const PerspectiveCropper = ({
     const [computedWidth, setWidth] = useState(width || 0);
     const [computedHeight, setHeight] = useState(height || 0);
 
-    const startPosx1 = insetPx + dotSizeOffsset;
-    const startPosy1 = insetPx + dotSizeOffsset;
-    const startPosx2 = computedWidth - insetPx - dotSizeOffsset;
-    const startPosy2 = insetPx + dotSizeOffsset;
-    const startPosx3 = computedWidth - insetPx - dotSizeOffsset;
-    const startPosy3 = computedHeight - insetPx - dotSizeOffsset;
-    const startPosx4 = insetPx + dotSizeOffsset;
-    const startPosy4 = computedHeight - insetPx - dotSizeOffsset;
+    const startPosx1 = startPoints && startPoints[0] ? startPoints[0].x : insetPx + dotSizeOffsset;
+    const startPosy1 = startPoints && startPoints[0] ? startPoints[0].y : insetPx + dotSizeOffsset;
+    const startPosx2 = startPoints && startPoints[1] ? startPoints[1].x : computedWidth - insetPx - dotSizeOffsset;
+    const startPosy2 = startPoints && startPoints[1] ? startPoints[1].y : insetPx + dotSizeOffsset;
+    const startPosx3 = startPoints && startPoints[2] ? startPoints[2].x : computedWidth - insetPx - dotSizeOffsset;
+    const startPosy3 = startPoints && startPoints[2] ? startPoints[2].y : computedHeight - insetPx - dotSizeOffsset;
+    const startPosx4 = startPoints && startPoints[3] ? startPoints[3].x : insetPx + dotSizeOffsset;
+    const startPosy4 = startPoints && startPoints[3] ? startPoints[3].y : computedHeight - insetPx - dotSizeOffsset;
 
     const getPoints = useCallback(() => {
         const fdot = firstDotRef.current;
