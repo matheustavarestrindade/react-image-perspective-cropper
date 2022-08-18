@@ -20,7 +20,8 @@ interface PerspectiveCropperProps {
     onPointsChange?: (points: Point[]) => void;
     onPointsFinishedChange?: (points: Point[]) => void;
     showGrid?: boolean;
-    debounceDelay?: number;
+    buttonContent?: React.ReactNode | string | number | null;
+    customButtonStyles?: CSSProperties;
 }
 
 const PerspectiveCropper = ({
@@ -37,7 +38,8 @@ const PerspectiveCropper = ({
     onPointsFinishedChange,
     startPoints,
     showGrid = true,
-    debounceDelay = 300,
+    buttonContent,
+    customButtonStyles,
 }: PerspectiveCropperProps) => {
     const firstDotRef = useRef<HTMLDivElement>(null);
     const secondDotRef = useRef<HTMLDivElement>(null);
@@ -53,6 +55,8 @@ const PerspectiveCropper = ({
     const [computedHeight, setHeight] = useState(height || 0);
 
     const [currentPoints, setCurrentPoints] = useState([]);
+
+    const [isDraggin, setIsDraggin] = useState(false);
 
     const startPosx1 = startPoints && startPoints[0] ? startPoints[0].x : insetPx + dotSizeOffsset;
     const startPosy1 = startPoints && startPoints[0] ? startPoints[0].y : insetPx + dotSizeOffsset;
@@ -145,13 +149,9 @@ const PerspectiveCropper = ({
                     endOnly: true,
                 }),
             ],
+            onend: () => setIsDraggin(false),
+            onstart: () => setIsDraggin(true),
             onmove: dragMoveListener,
-            listeners: {
-                move(event) {
-                    /* console.log(event.pageX,
-                            event.pageY) */
-                },
-            },
         });
 
         return () => interactListener.unset();
@@ -260,13 +260,13 @@ const PerspectiveCropper = ({
     );
 
     useEffect(() => {
-        if (typeof onPointsFinishedChange === "function") {
-            const timeout = setTimeout(() => {
-                onPointsFinishedChange(currentPoints);
-            }, debounceDelay);
-            return () => clearTimeout(timeout);
+        if (isDraggin) {
+            return;
         }
-    }, [currentPoints, debounceDelay, onPointsFinishedChange]);
+        if (!isDraggin) {
+            onPointsFinishedChange(currentPoints);
+        }
+    }, [currentPoints, onPointsFinishedChange, isDraggin]);
 
     const cropImage = useCallback(() => {
         const canvas = canvasRef.current;
@@ -310,8 +310,9 @@ const PerspectiveCropper = ({
                 <DraggableDot id="THIRD" draggableDotStyles={draggableDotStyles} ref={thirdDotRef} draggableDotSize={draggableDotSize} />
                 <DraggableDot id="FORFH" draggableDotStyles={draggableDotStyles} ref={fourthDotRef} draggableDotSize={draggableDotSize} />
                 <canvas ref={canvasRef} width={computedWidth} height={computedHeight} />
-                <button style={buttonStyles} onClick={cropImage}>
-                    Crop Image
+                <button style={customButtonStyles || buttonStyles} onClick={cropImage}>
+                    {buttonContent && buttonContent}
+                    {!buttonContent && "Crop Image"}
                 </button>
             </div>
         </div>
